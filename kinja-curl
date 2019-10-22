@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+KINJA_DOMAIN=${KINJA_DOMAIN:-apilocal.kinja.com}
+KINJA_SERVICE=${KINJA_SERVICE:-$(pwd | grep -o '[a-z]*$')}
+if [ -f ".sbtopts" ]; then
+	KINJA_PORT=$(sed -n 's/-Dhttps.port=\([0-9]*\)$/\1/p' .sbtopts)
+else
+	KINJA_PORT=9000
+fi
+KINJA_URL="https://$KINJA_DOMAIN:$KINJA_PORT"
+
+HEADERS=(-H "Content-Type: application/json")
+if [ -n "$KINJA_TOKEN" ]; then
+	HEADERS+=(-H "Authorization: Bearer $KINJA_TOKEN")
+fi
+
+if [ -z "$1" ]; then
+	echo "Usage: $0 path/to/endpoint"
+	echo "Default service URL is $KINJA_URL/api/$KINJA_SERVICE"
+	exit 1
+fi
+
+# Remove trailing slash
+KINJA_PATH=${1%/} 
+shift
+
+if [[ "$KINJA_PATH" == /* ]]; then
+	curl "${HEADERS[@]}" -s --url "$KINJA_URL$KINJA_PATH" "$@"
+else
+	curl "${HEADERS[@]}" -s --url "$KINJA_URL/api/$KINJA_SERVICE/$KINJA_PATH" "$@"
+fi
