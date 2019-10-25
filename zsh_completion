@@ -1,0 +1,4 @@
+#compdef kinja-curl
+
+local PLAY_ROUTES_AWK='/^(GET|POST|PUT|HEAD)/{r="";split($2, p, "/");if(p[2]=="api"){for (i=4;i<=length(p);i++) r=r p[i]  "/"; print r } else print $2 }'
+_arguments '1: :($(awk "$PLAY_ROUTES_AWK" conf/routes))'
